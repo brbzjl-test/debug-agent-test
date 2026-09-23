@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=现场调试助手
+Comment=打开现场问题上报浮窗
+Exec=@INSTALL_ROOT@/.venv/bin/python @INSTALL_ROOT@/scripts/run_ui_login.py --runtime-dir /run/field-support
+TryExec=@INSTALL_ROOT@/.venv/bin/python
+Terminal=false
+X-GNOME-Autostart-enabled=true
+StartupNotify=false
+Categories=Utility;

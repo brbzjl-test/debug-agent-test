@@ -1,0 +1,10 @@
+business_repositories:
+  - name: debug-agent-test
+    git_url: git@github.com:brbzjl-test/debug-agent-test.git
+    local_path: /Users/brb/项目/debug-agent-test
+
+# Optional:
+# ros_topology:
+#   expected_topology_file: /opt/robot/config/ros_topology.yaml
+# log_paths:
+#   - /tmp/singel_workstation_runtime/A2机器人宝维塔NCU上下料

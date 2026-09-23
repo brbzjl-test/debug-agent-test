@@ -1,0 +1,15 @@
+{
+  "workdir": "../..",
+  "state_dir": ".state",
+  "lark_cli": "lark-cli",
+  "codex_cli": "codex",
+  "lark_profile": "YOUR_EXISTING_PROFILE",
+  "allowed_users": ["ou_YOUR_OPEN_ID"],
+  "engineer_users": [],
+  "allowed_group_chats": [],
+  "bot_names": ["YOUR_BOT_NAME"],
+  "issue_docs": {"folder_name": "问题详情"},
+  "reasoning_effort": "medium",
+  "model_timeout_seconds": 600,
+  "base": null
+}

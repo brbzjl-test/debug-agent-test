@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>现场调试助手</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="float-page">
+  <button class="floating-launcher" id="floating-launcher" type="button" aria-label="打开现场调试助手">
+    <span aria-hidden="true">诊</span>
+    <i></i>
+  </button>
+  <button class="floating-close" id="floating-close" type="button" aria-label="退出现场调试助手" title="退出现场调试助手">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <script>
+    const launcher = document.getElementById('floating-launcher');
+    const closeButton = document.getElementById('floating-close');
+    let pointerStart = null;
+
+    function openAssistant() {
+      if (window.desktopBridge) {
+        window.desktopBridge.openChat();
+      } else {
+        window.open('index.html', '_blank', 'noopener');
+      }
+    }
+    if (window.qt && window.QWebChannel) {
+      new QWebChannel(qt.webChannelTransport, (channel) => {
+        window.desktopBridge = channel.objects.desktopBridge;
+      });
+    }
+
+    launcher.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      pointerStart = { x: event.screenX, y: event.screenY };
+    });
+    launcher.addEventListener('pointermove', (event) => {
+      if (!pointerStart) return;
+      const distance = Math.hypot(event.screenX - pointerStart.x, event.screenY - pointerStart.y);
+      if (distance < 4) return;
+      pointerStart = null;
+      if (window.desktopBridge?.startDrag) window.desktopBridge.startDrag();
+    });
+    launcher.addEventListener('pointerup', () => {
+      if (!pointerStart) return;
+      pointerStart = null;
+      openAssistant();
+    });
+    launcher.addEventListener('pointercancel', () => { pointerStart = null; });
+    closeButton.addEventListener('pointerdown', (event) => event.stopPropagation());
+    closeButton.addEventListener('click', () => {
+      if (window.desktopBridge?.quitApp) window.desktopBridge.quitApp();
+    });
+  </script>
+</body>
+</html>

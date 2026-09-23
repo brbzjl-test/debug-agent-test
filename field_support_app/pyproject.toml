@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "field-support-agent"
+version = "0.1.0"
+description = "Local core for the field support assistant"
+requires-python = ">=3.9"
+dependencies = ["lark-oapi>=1.7,<2"]
+
+[project.optional-dependencies]
+desktop = ["PySide6>=6.5,<7"]
+
+[project.scripts]
+field-support-agent = "field_support_agent.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"field_support_agent.ui" = ["web/*.html", "web/*.css", "web/*.js"]

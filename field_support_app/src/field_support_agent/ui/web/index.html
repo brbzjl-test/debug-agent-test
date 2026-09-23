@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>现场调试助手</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell" aria-live="polite">
+    <header class="topbar">
+      <button class="icon-button is-hidden" id="back-button" type="button" aria-label="返回">‹</button>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">诊</span>
+        <div>
+          <h1>现场调试助手</h1>
+          <p id="connection-label"><span class="presence"></span>本机服务正常</p>
+        </div>
+      </div>
+      <button class="icon-button settings-button" id="settings-button" type="button" aria-label="设置" title="设置">⚙</button>
+      <button class="icon-button" id="minimize-button" type="button" aria-label="收起窗口">×</button>
+    </header>
+
+    <section class="screen is-active" id="init-screen" data-screen="init">
+      <div class="system-panel">
+        <div class="system-panel-head">
+          <div class="system-summary">
+            <p class="eyebrow">业务程序状态</p>
+            <h2 id="business-status-title">正在检查业务程序</h2>
+            <p id="business-status-copy">按设置中的本地代码路径检测</p>
+          </div>
+          <span class="status-badge status-unknown" id="business-status-badge">检查中</span>
+        </div>
+        <div class="business-status-list" id="business-status-list"></div>
+      </div>
+      <div class="primary-actions">
+        <button class="command-button primary" id="new-issue-button" type="button">
+          <span class="command-icon" aria-hidden="true">＋</span>
+          <span><strong>上报新问题</strong><small>描述刚刚发生的现象</small></span>
+        </button>
+      </div>
+      <div class="recent-block">
+        <div class="section-heading"><h3>最近问题</h3><button class="text-button" id="view-all-button" type="button">全部记录</button></div>
+        <div id="recent-list" class="issue-list"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="history-screen" data-screen="history">
+      <div class="history-heading">
+        <div class="page-title">
+          <p class="eyebrow">历史问题</p>
+          <h2>问题记录</h2>
+        </div>
+        <button class="management-mode-button" id="management-mode-button" type="button">管理</button>
+      </div>
+      <label class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <input id="history-search" type="search" placeholder="搜索问题 ID 或现象" autocomplete="off">
+      </label>
+      <div class="filter-tabs" role="tablist" aria-label="问题状态筛选">
+        <button class="filter-tab is-active" type="button" data-filter="all">全部</button>
+        <button class="filter-tab" type="button" data-filter="open">处理中</button>
+        <button class="filter-tab" type="button" data-filter="pending_verification">待验证</button>
+        <button class="filter-tab" type="button" data-filter="closed">已解决</button>
+      </div>
+      <div class="management-toolbar is-hidden" id="management-toolbar">
+        <span id="management-selection-count">已选择 0 条</span>
+        <button class="danger-button" id="delete-selected-button" type="button" disabled>删除所选</button>
+      </div>
+      <div id="history-list" class="issue-list history-list"></div>
+    </section>
+
+    <section class="screen detail-screen" id="detail-screen" data-screen="detail">
+      <div class="issue-header">
+        <div><p class="eyebrow" id="detail-date">问题详情</p><h2 id="detail-id"></h2></div>
+        <span class="status-badge status-open" id="detail-status"></span>
+      </div>
+      <div class="detail-content" id="detail-content">
+        <section class="detail-section" aria-labelledby="detail-description-title">
+          <h3 id="detail-description-title">问题描述</h3>
+          <p class="detail-copy" id="detail-description"></p>
+        </section>
+        <section class="detail-section" aria-labelledby="detail-process-title">
+          <h3 id="detail-process-title">处理记录</h3>
+          <div class="detail-timeline" id="detail-timeline"></div>
+        </section>
+        <section class="detail-section" aria-labelledby="detail-solution-title">
+          <h3 id="detail-solution-title">解决方案</h3>
+          <p class="detail-copy" id="detail-solution"></p>
+          <div class="verification-block" id="detail-verification-block">
+            <span>验证方法</span>
+            <p id="detail-verification"></p>
+          </div>
+        </section>
+      </div>
+      <div class="detail-actions">
+        <button class="primary-button" id="detail-reopen-button" type="button">再次发生</button>
+      </div>
+    </section>
+
+    <section class="screen chat-screen" id="chat-screen" data-screen="chat">
+      <div class="issue-header">
+        <div><p class="eyebrow" id="issue-date">今天</p><h2 id="issue-id">新问题</h2></div>
+        <span class="status-badge status-open" id="issue-status">处理中</span>
+      </div>
+      <div class="chat-scroll" id="chat-scroll">
+        <div class="parent-notice is-hidden" id="parent-notice"></div>
+        <div class="messages" id="messages"></div>
+        <div class="workflow-panel is-hidden" id="workflow-panel"></div>
+      </div>
+      <form class="composer" id="composer">
+        <label for="message-input">描述问题现象</label>
+        <div class="composer-row">
+          <textarea id="message-input" rows="2" placeholder="例如：设备指示灯亮，但操作没有反应" required></textarea>
+          <button class="send-button" type="submit" aria-label="发送问题描述">发送</button>
+        </div>
+        <p class="composer-hint">提交后会自动保存问题记录并收集现场状态</p>
+      </form>
+    </section>
+
+    <section class="screen settings-screen" id="settings-screen" data-screen="settings">
+      <div class="page-title">
+        <p class="eyebrow">本机设置</p>
+        <h2>现场调试助手</h2>
+      </div>
+      <form id="settings-form" class="settings-form">
+        <section class="settings-section" aria-labelledby="startup-settings-title">
+          <div class="settings-heading"><h3 id="startup-settings-title">启动方式</h3><span class="config-state" id="startup-state"></span></div>
+          <label class="startup-toggle" for="startup-enabled">
+            <input id="startup-enabled" type="checkbox" disabled>
+            <span>开机及桌面登录时自动启动</span>
+          </label>
+          <p class="setting-help">修改后从下次开机生效，当前运行不受影响。</p>
+        </section>
+        <section class="settings-section" aria-labelledby="business-settings-title">
+          <div class="settings-heading">
+            <h3 id="business-settings-title">业务代码</h3>
+            <button class="text-button" id="add-repository" type="button">添加仓库</button>
+          </div>
+          <div id="repository-settings" class="repository-settings"></div>
+          <label class="field-row field-wide">
+            <span>ROS 拓扑文件（可选）</span>
+            <input id="ros-topology-file" type="text" autocomplete="off" placeholder="/opt/robot/config/ros_topology.yaml">
+          </label>
+          <label class="field-row field-wide">
+            <span>业务日志目录（每行一个）</span>
+            <textarea id="business-log-paths" rows="3" spellcheck="false" placeholder="/tmp/singel_workstation_runtime/A2机器人宝维塔NCU上下料"></textarea>
+          </label>
+        </section>
+
+        <section class="settings-section" aria-labelledby="codex-settings-title">
+          <div class="settings-heading"><h3 id="codex-settings-title">Codex</h3><span class="config-state" id="codex-state"></span></div>
+          <label class="field-row field-wide">
+            <span>程序位置</span>
+            <input id="codex-binary" type="text" autocomplete="off" required>
+          </label>
+          <label class="field-row field-wide">
+            <span>配置目录</span>
+            <input id="codex-home" type="text" autocomplete="off" required>
+          </label>
+          <div class="field-grid">
+            <label class="field-row">
+              <span>模型</span>
+              <input id="codex-model" type="text" autocomplete="off" placeholder="留空则使用 Codex 默认模型">
+            </label>
+            <label class="field-row">
+              <span>推理强度</span>
+              <select id="codex-effort">
+                <option value="">跟随 Codex 默认</option>
+                <option value="none">none</option>
+                <option value="minimal">minimal</option>
+                <option value="low">low</option>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
+                <option value="xhigh">xhigh</option>
+                <option value="max">max</option>
+              </select>
+            </label>
+          </div>
+          <label class="field-row field-wide">
+            <span>分析超时（秒）</span>
+            <input id="codex-timeout" type="number" min="30" max="1800" step="30" required>
+          </label>
+        </section>
+
+        <section class="settings-section" aria-labelledby="feishu-settings-title">
+          <div class="settings-heading"><h3 id="feishu-settings-title">飞书与问题台账</h3><span class="config-state" id="feishu-state"></span></div>
+          <label class="field-row field-wide">
+            <span>设备名称</span>
+            <input id="device-name" type="text" autocomplete="off" maxlength="64" placeholder="例如：A2机器人宝维塔NCU上下料">
+          </label>
+          <label class="field-row field-wide">
+            <span>现场（机器人/设备）</span>
+            <input id="site-name" type="text" autocomplete="off" maxlength="64" placeholder="例如：上海工厂·机器人1">
+          </label>
+          <label class="field-row field-wide">
+            <span>连接方式</span>
+            <select id="feishu-connection-mode">
+              <option value="credentials">App ID / App Secret</option>
+              <option value="lark_cli_profile">本机 lark-cli profile</option>
+            </select>
+          </label>
+          <div class="field-grid" id="feishu-credentials-fields">
+            <label class="field-row">
+              <span>App ID</span>
+              <input id="feishu-app-id" type="text" autocomplete="off" placeholder="cli_xxx">
+            </label>
+            <label class="field-row">
+              <span>App Secret</span>
+              <input id="feishu-app-secret" type="password" autocomplete="new-password" placeholder="未修改">
+            </label>
+          </div>
+          <div class="field-grid is-hidden" id="feishu-profile-fields">
+            <label class="field-row">
+              <span>lark-cli 程序位置</span>
+              <input id="lark-cli-binary" type="text" autocomplete="off" placeholder="/opt/homebrew/bin/lark-cli">
+            </label>
+            <label class="field-row">
+              <span>Profile</span>
+              <input id="lark-profile" type="text" autocomplete="off" placeholder="inventory-bot">
+            </label>
+          </div>
+          <label class="field-row field-wide">
+            <span>工程师支持群 Chat ID</span>
+            <input id="feishu-chat-id" type="text" autocomplete="off" placeholder="oc_xxx">
+          </label>
+          <div class="field-grid">
+            <label class="field-row">
+              <span>多维表格 App Token</span>
+              <input id="base-app-token" type="text" autocomplete="off" placeholder="bascnxxx">
+            </label>
+            <label class="field-row">
+              <span>问题表 Table ID</span>
+              <input id="base-table-id" type="text" autocomplete="off" placeholder="tblxxx">
+            </label>
+          </div>
+          <button class="secondary-button verify-button" id="verify-feishu" type="button">验证飞书连接</button>
+        </section>
+
+        <section class="settings-section" aria-labelledby="management-settings-title">
+          <div class="settings-heading"><h3 id="management-settings-title">工程模式</h3><span class="config-state" id="management-password-state"></span></div>
+          <label class="field-row field-wide">
+            <span>管理密码</span>
+            <input id="management-password-setting" type="password" autocomplete="new-password" minlength="4" maxlength="128" placeholder="输入新密码">
+          </label>
+          <p class="setting-help">用于阻止现场人员误删问题记录，留空表示不修改。</p>
+        </section>
+
+        <p class="settings-result" id="settings-result" role="status"></p>
+        <button class="primary-button save-settings" type="submit">保存设置</button>
+      </form>
+    </section>
+  </main>
+
+  <dialog id="reopen-dialog" class="confirm-dialog">
+    <form method="dialog">
+      <p class="eyebrow">再次上报</p>
+      <h2>创建一条新的现场记录？</h2>
+      <p id="reopen-copy"></p>
+      <div class="id-preview"><span>将创建</span><strong id="next-sub-id"></strong></div>
+      <div class="dialog-actions">
+        <button class="secondary-button" value="cancel">取消</button>
+        <button class="primary-button" id="confirm-reopen" value="default">创建并描述问题</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="management-dialog" class="confirm-dialog">
+    <form id="management-form">
+      <p class="eyebrow">工程模式</p>
+      <h2 id="management-dialog-title">输入管理密码</h2>
+      <p id="management-dialog-copy">进入后可以永久删除本地问题记录和证据。</p>
+      <label class="dialog-field">
+        <span>管理密码</span>
+        <input id="management-password" type="password" autocomplete="current-password" minlength="4" required>
+      </label>
+      <p class="dialog-error" id="management-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="secondary-button" id="cancel-management" type="button">取消</button>
+        <button class="primary-button" type="submit">进入工程模式</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="delete-dialog" class="confirm-dialog">
+    <form id="delete-form">
+      <p class="eyebrow">永久删除</p>
+      <h2>删除所选问题？</h2>
+      <p id="delete-dialog-copy"></p>
+      <div class="delete-warning">相关聊天、方案、SQL 记录、快照和分析文件都会删除，无法恢复。</div>
+      <p class="dialog-error" id="delete-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="secondary-button" id="cancel-delete" type="button">取消</button>
+        <button class="danger-button" id="confirm-delete" type="submit">确认删除</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>

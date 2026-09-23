@@ -1,0 +1,37 @@
+[Unit]
+Description=Field Support Assistant Core
+Documentation=file://@INSTALL_ROOT@/README.md
+After=local-fs.target
+
+[Service]
+Type=simple
+User=@SERVICE_USER@
+Group=@SERVICE_GROUP@
+UMask=0077
+Environment=PYTHONUNBUFFERED=1
+ExecStart=@INSTALL_ROOT@/.venv/bin/python @INSTALL_ROOT@/scripts/run_core.py --config @CONFIG_PATH@ --state-dir /var/lib/field-support --runtime-dir /run/field-support --startup-preference /var/lib/field-support/autostart.mode
+ExecStartPost=@INSTALL_ROOT@/.venv/bin/python @INSTALL_ROOT@/scripts/healthcheck.py --runtime-dir /run/field-support --wait 5
+Restart=on-failure
+RestartSec=2
+StateDirectory=field-support
+StateDirectoryMode=0700
+RuntimeDirectory=field-support
+RuntimeDirectoryMode=0700
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/field-support /run/field-support
+ReadWritePaths=@CODEX_HOME_PATH@
+
+[Install]
+WantedBy=multi-user.target

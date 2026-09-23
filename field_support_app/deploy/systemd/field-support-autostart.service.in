@@ -1,0 +1,10 @@
+[Unit]
+Description=Start Field Support Core when enabled in app settings
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=@INSTALL_ROOT@/.venv/bin/python @INSTALL_ROOT@/scripts/startup_core.py --preference /var/lib/field-support/autostart.mode
+
+[Install]
+WantedBy=multi-user.target

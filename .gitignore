@@ -3,3 +3,8 @@ __pycache__/
 .DS_Store
 logs/
 runtime/
+field_support_app/.venv/
+field_support_app/build/
+field_support_app/src/*.egg-info/
+field_support_app/*.log
+**/__pycache__/
